@@ -1,0 +1,84 @@
+package com.reaserch.OCR;
+
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+
+import javax.imageio.ImageIO;
+
+import org.opencv.core.Core;
+import org.opencv.core.CvType;
+import org.opencv.core.Mat;
+import org.opencv.core.Rect;
+import org.opencv.core.Size;
+import org.opencv.highgui.HighGui;
+import org.opencv.imgcodecs.Imgcodecs;
+import org.opencv.imgproc.Imgproc;
+
+import net.sourceforge.tess4j.ITesseract;
+import net.sourceforge.tess4j.Tesseract;
+import net.sourceforge.tess4j.TesseractException;
+
+public class Test {
+
+	private static void showWaitDestroy(String winname, Mat img) {
+		HighGui.imshow(winname, img);
+		HighGui.moveWindow(winname, 500, 0);
+		HighGui.waitKey(0);		
+		HighGui.destroyWindow(winname);
+
+	}
+	public static void writeCroppedImage(Mat croppedImage, String trainedData) throws IOException, TesseractException {
+	
+	// grayscale the image
+		Mat gray = new Mat();
+		Imgproc.cvtColor(croppedImage, gray, Imgproc.COLOR_BGR2GRAY);
+		showWaitDestroy("gray", gray);
+
+	// threshold the image
+		Mat threshold = new Mat();
+		Imgproc.adaptiveThreshold(gray, threshold, 255, Imgproc.ADAPTIVE_THRESH_MEAN_C, Imgproc.THRESH_BINARY,(2 * 15) + 1, 15);
+		showWaitDestroy("threshold", threshold);
+
+		File imageFile = new File("C:\\Users\\DigiRatina002\\Desktop\\test\\1 - Digiratina\\arabic-recognition\\images\\3.jpg");
+		BufferedImage bi = (BufferedImage) ImageIO.read(imageFile);
+
+		ITesseract instance = new Tesseract();
+	
+	//path for tessdata file
+		instance.setDatapath("C:\\Users\\DigiRatina002\\Desktop\\test\\1 - Digiratina\\arabic-recognition\\tessdata");
+
+		instance.setLanguage(trainedData);
+
+		String result = instance.doOCR(bi);
+
+		System.out.println(result);
+	}
+
+	public static void main(String[] args) throws IOException, TesseractException {
+
+
+	 // Load the OpenCV Library	
+		nu.pattern.OpenCV.loadShared();
+
+	// load the image
+		Mat src = Imgcodecs.imread("C:\\Users\\DigiRatina002\\Desktop\\test\\1 - Digiratina\\arabic-recognition\\images\\3.jpg");
+
+	// resize the image
+		Mat resize = new Mat();
+		Imgproc.resize(src, resize, new Size(250, 120)); // 300, 150 or 250, 121
+		showWaitDestroy("fin", resize);
+		
+				
+	// crop the image
+		Rect rect = new Rect(0, 0, (resize.width() * 90 / 100), 65);
+		Mat crop = new Mat(resize, rect);
+
+		
+		System.out.print("Output: "); 
+		writeCroppedImage(crop, "aracustom1"); 
+		
+		System.exit(0);
+
+	}
+}
